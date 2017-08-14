@@ -31,6 +31,8 @@ df = DataFrame(rows, columns=['id', 'level'])
 id_list = ['9000','9001','9002','9003','9004','9005', '9006','9007','9008','9009',
 '9018','9011','9012','9013','9014','9015','9016','9017', '9031']
 
+origin_level = [7,8,10,14,16,19,22,26,29,32,35,38,41,44,47,50,53,56]
+adjust_level = [7,8,10,14,18,22,26,30,35,40,42,45,50,55,60,62,65,70]
 print 'Ploting'
 # Create subplots
 fig, axes = plt.subplots(1, len(id_list), sharey=True)
@@ -45,6 +47,9 @@ for j in range(len(id_list)):
         # Calculate .25 and .75 quantiles value, data must be float
         quantile25 = int(round(sub_df.level.quantile(0.25)))
         quantile75 = int(round(sub_df.level.quantile(0.75)))
+        # Plot level data scatter
+        axes[j].scatter(1, origin_level[j], c='g', marker='v')
+        axes[j].scatter(1, adjust_level[j], c='r', marker='^')
         # Plot quantiles and median
         # Both coordinate and label are relative to axes itself
         axes[j].text(0.6, quantile25 - 0.5, str(quantile25), fontsize=10)
