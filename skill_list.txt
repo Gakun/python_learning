@@ -1,0 +1,14 @@
+1. Programming
+	-Python
+	-R
+	-SQL
+2. Mathematics & Statistics
+	-Review Basic Statistics
+	-Multi-val calculus
+	-Statistical Inference
+	-Bayesian
+	-time series
+	-Machine Learning
+	-Deep Learning
+	-Experimental Design
+3. Visualization & Presentation
