@@ -4,6 +4,8 @@ by implementing Breadth-first Search.
 """
 
 from collections import deque
+import undirected_graph_sample as SAMPLE
+import copy
 
 
 def bfs_visited(ugraph, start_node):
@@ -55,15 +57,80 @@ def compute_resilience(ugraph, attack_order):
     Takes the undirected graph ugraph, a list of nodes attack_order, compute the resilience
     after removing the node and its edges in attack_order.
     """
+    ugraph_copy = copy.deepcopy(ugraph)
     resilience = list()
-    resilience.append(largest_cc_size(ugraph))
+    resilience.append(largest_cc_size(ugraph_copy))
     for attack in attack_order:
         # Remove the edge from the nodes of other side
-        for other_node in ugraph[attack]:
-            ugraph[other_node].discard(attack)
+        for other_node in ugraph_copy[attack]:
+            ugraph_copy[other_node].discard(attack)
         # Remove all the edge of the node being attack
-        ugraph.pop(attack)
-        resilience.append(largest_cc_size(ugraph))
+        ugraph_copy.pop(attack)
+        resilience.append(largest_cc_size(ugraph_copy))
+    return resilience
+
+
+def compute_resilience_disjoint_set(ugraph, attack_order):
+    """
+    Asymptotically faster approaches of compute_resilience based on disjoint set algorithm
+    """
+    # Compute the final graph after all attacking
+    attacked_graph = copy.deepcopy(ugraph)
+    for attack in attack_order:
+        # Remove the edge from the nodes of other side
+        for other_node in attacked_graph[attack]:
+            attacked_graph[other_node].discard(attack)
+        # Remove all the edge of the node being attack
+        attacked_graph.pop(attack)
+    # Use BFS to calculate the sets of connected components for the final graph
+    final_graph = cc_visited(attacked_graph)
+    # groups <- group_nodes: set of connected nodes, node_root <- node:group node of its belonging group
+    groups = dict()
+    node_root = dict()
+    # Create groups and node_root for the final graph
+    for group in final_graph:
+        # Set an arbitrary item from this group as group root
+        for group_root in group:
+            break
+        groups[group_root] = set([group_root])
+        for node in group:
+            groups[group_root].add(node)
+            node_root[node] = group_root
+    # Compute the resilience of the final graph
+    max_size = 0
+    for root in groups:
+        if len(groups[root]) > max_size:
+            max_size = len(groups[root])
+    resilience = [max_size]
+
+    # Add the attacked node back and compute the resilience for each step
+    attack_order_copy = attack_order[:]
+    while len(attack_order_copy) != 0:
+        new_node = attack_order_copy.pop()
+        # Initialize the new node
+        groups[new_node] = set([new_node])
+        node_root[new_node] = new_node
+        # Union the set of attacked node and the set of neighbor
+        for neighbor in ugraph[new_node]:
+            # If the neighbor is the node in the attack list (haven't be added back), skip
+            if neighbor not in attack_order_copy:
+                root_neighbor = node_root[neighbor]
+                root_new_node = node_root[new_node]
+                # Judge whether they are in the same group, if not, union two sets
+                if root_neighbor != root_new_node:
+                    for node in groups[root_new_node]:
+                        # Path compression
+                        node_root[node] = root_neighbor
+                        # Union
+                        groups[root_neighbor].add(node)
+                    # Discard the original group of new_node
+                    groups.pop(root_new_node)
+        # Resilience for each iteration
+        max_size = 0
+        for root in groups:
+            if len(groups[root]) > max_size:
+                max_size = len(groups[root])
+        resilience = [max_size] + resilience
     return resilience
 
 
@@ -105,9 +172,18 @@ def test_compute_resilience():
     """
     Test 4 - compute_resilience
     """
-    ugraph = {0: set([2]), 1: set([2, 3]), 2: set([0, 1, 3]), 3: set([1, 2]), 4: set([5]), 5: set([4])}
-    attack_order = [2, 0, 4, 1]
+    ugraph = SAMPLE.GRAPH7
+    attack_order = [2, 0, 19, 20, 40, 13, 7, 6, 33, 45, 8]
     print compute_resilience(ugraph, attack_order)
+
+
+def test_compute_resilience_disjoint_set():
+    """
+    Test 5 - compute_resilience_disjoint_set
+    """
+    ugraph = SAMPLE.GRAPH7
+    attack_order = [2, 0, 19, 20, 40, 13, 7, 6, 33, 45, 8]
+    print compute_resilience_disjoint_set(ugraph, attack_order)
 #test_bfs_visited()
 #test_cc_visited()
 #test_largest_cc_size()
