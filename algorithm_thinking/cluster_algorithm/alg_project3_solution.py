@@ -1,7 +1,7 @@
 """
 Method for finding closest pair and clustering data
 """
-#import cluster_class as alg_cluster
+import alg_cluster
 
 
 def slow_closest_pair(cluster_list):
@@ -25,7 +25,7 @@ def slow_closest_pair(cluster_list):
 
 def fast_closest_pair(cluster_list):
     """
-    Input: list of Cluster objects
+    Input: list of Cluster objects, sorted by horiz_center of each cluster
     Return: tuple (dist, idx1, idx2)
     Divided and conquer
     """
@@ -71,3 +71,41 @@ def closest_pair_strip(cluster_list, horiz_center, half_width):
         return (min_distance, min_index1, min_index2)
     else:
         return (min_distance, min_index2, min_index1)
+
+
+def hierarchical_clustering(cluster_list, num_clusters):
+    """
+    Takes a list of Cluster objects and applies hierarchical clustering method,
+    return the list of clusters
+    """
+    cluster_list_copy = cluster_list[:]
+    while len(cluster_list_copy) > num_clusters:
+        cluster_list_copy.sort(key=lambda cluster: cluster.horiz_center())
+        pair = fast_closest_pair(cluster_list_copy)
+        cluster_list_copy[pair[1]].merge_clusters(cluster_list_copy[pair[2]])
+        cluster_list_copy.pop(pair[2])
+    return cluster_list_copy
+
+
+def kmeans_clustering(cluster_list, num_clusters, num_iterations):
+    """
+    Takes a list of Cluster objects and applies k-means clustering method,
+    return this list of clusters.
+    """
+    clusters = list(cluster_list)
+    clusters.sort(key=lambda cluster: cluster.total_population(), reverse=True)
+    clusters = clusters[:num_clusters]
+    for dummy_loop in xrange(num_iterations):
+        new_clusters = [alg_cluster.Cluster(set(),0,0,0,0) for dummy_idx in range(num_clusters)]
+        for county in cluster_list:
+            min_index = -1
+            min_distance = float('inf')
+            for index in range(len(clusters)):
+                distance = county.distance(clusters[index])
+                if distance < min_distance:
+                    min_distance = distance
+                    min_index = index
+            new_clusters[min_index].merge_clusters(county)
+        clusters = new_clusters
+    return clusters
+
