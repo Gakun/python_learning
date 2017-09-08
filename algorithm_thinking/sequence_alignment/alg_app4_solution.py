@@ -166,6 +166,7 @@ def q4_solution():
     for score in score_distribution:
         score_distribution[score] = float(score_distribution[score]) / 1000
 
+    print score_distribution
     # Plot
     x_series = score_distribution.keys()
     x_series.sort()
@@ -176,9 +177,54 @@ def q4_solution():
     plt.ylabel('Fraction')
     plt.show()
 
-q4_solution()
+# q4_solution()
 
 
+def q5_solution():
+    """
+    Question 5 - solution
+    Mean:  51.74
+    Delta:  6.69331009292
+    z-scores:  122.997439021
+    """
+    score_distribution = {38: 0.002, 39: 0.003, 40: 0.006, 41: 0.011, 42: 0.021, 43: 0.017, 44: 0.048, 45: 0.053, 46: 0.066,
+        47: 0.056, 48: 0.059, 49: 0.084, 50: 0.075, 51: 0.061, 52: 0.058, 53: 0.046, 54: 0.049, 55: 0.038, 56: 0.044, 57: 0.019,
+        58: 0.03, 59: 0.018, 60: 0.031, 61: 0.015, 62: 0.019, 63: 0.015, 64: 0.012, 65: 0.006, 66: 0.006, 67: 0.004, 68: 0.005,
+        69: 0.004, 70: 0.003, 71: 0.003, 72: 0.005, 73: 0.001, 74: 0.002, 75: 0.001, 76: 0.002, 79: 0.001, 84: 0.001}
+    mean = sum([score * score_distribution[score] for score in score_distribution])
+    delta = math.sqrt(sum([((score - mean) ** 2) * score_distribution[score] for score in score_distribution]))
+    print 'Mean: ', mean
+    print 'Delta: ', delta
+    print 'z-scores: ', (float(875) - mean) / delta
+
+# q5_solution()
 
 
+def check_spelling(checked_word, dist, word_list):
+    """
+    Iterate through word_list and returns the set of all words that are within edit distance dist of the string checked_word
+    """
+    alphabet = [chr(i) for i in range(ord('a'), ord('z') + 1)]
+    score_matrix = student.build_scoring_matrix(alphabet, 2, 1, 0)
+    similar_words = set([])
+    for word in word_list:
+        align_matrix = student.compute_alignment_matrix(word, checked_word, score_matrix, True)
+        edit_dist = len(word) + len(checked_word) - student.compute_global_alignment(word, checked_word, score_matrix, align_matrix)[0]
+        if edit_dist <= dist:
+            similar_words.add(word)
+    return similar_words
+
+
+def q8_solution():
+    """
+    Question 8
+    humble:  set(['bumble', 'humbled', 'tumble', 'humble', 'rumble', 'humbler', 'humbles', 'fumble', 'humbly', 'jumble', 'mumble'])
+    'firefly':  set(['firefly', 'tiredly', 'freely', 'fireclay', 'direly', 'finely', 'firstly', 'liefly', 'fixedly', 'refly', 'firmly'])
+    """
+    word_list = read_words(WORD_LIST_URL)
+    # print 'humble: ', check_spelling('humble', 1, word_list)
+    print 'firefly: ', check_spelling('firefly', 2, word_list)
+
+
+q8_solution()
 
